@@ -278,6 +278,44 @@ const char *latestFeatures[] = {
 #   endif
 #endif
 
+/// BEGIN CHANGE FOR KATTIS
+
+#ifdef OK_EXIT_CODE
+    #undef OK_EXIT_CODE
+#endif // OK_EXIT_CODE
+#define OK_EXIT_CODE 42
+
+#ifdef WA_EXIT_CODE
+    #undef WA_EXIT_CODE
+#endif // WA_EXIT_CODE
+#define WA_EXIT_CODE 43
+
+#ifdef PE_EXIT_CODE
+    #undef PE_EXIT_CODE
+#endif // PE_EXIT_CODE
+#define PE_EXIT_CODE 43
+
+#ifdef DIRT_EXIT_CODE
+    #undef DIRT_EXIT_CODE
+#endif // DIRT_EXIT_CODE
+#define DIRT_EXIT_CODE 43
+
+#ifdef UNEXPECTED_EOF_EXIT_CODE
+    #undef UNEXPECTED_EOF_EXIT_CODE
+#endif // UNEXPECTED_EOF_EXIT_CODE
+#define UNEXPECTED_EOF_EXIT_CODE 43
+
+#ifdef FAIL_EXIT_CODE
+    #undef FAIL_EXIT_CODE
+#endif // FAIL_EXIT_CODE
+#define FAIL_EXIT_CODE 134
+
+const std::string FILENAME_JUDGE_MESSAGE = "judgemessage.txt";
+const std::string FILENAME_JUDGE_ERROR = "judgeerror.txt";
+std::string __kattis_message_file, __kattis_error_file;
+
+/// END CHANGE FOR KATTIS
+
 #ifdef __GNUC__
 #    define __TESTLIB_STATIC_ASSERT(condition) typedef void* __testlib_static_assert_type[(condition) ? 1 : -1] __attribute__((unused))
 #else
@@ -2310,6 +2348,10 @@ struct TestlibFinalizeGuard {
         }
 
         validator.writeTestOverviewLog();
+        
+        // BEGIN CHANGE FOR KATTIS
+        if (_alive && testlibMode == _validator && quitCount == 0) exit(OK_EXIT_CODE);
+        // END CHANGE FOR KATTIS
     }
 };
 
@@ -2692,6 +2734,10 @@ NORETURN void InStream::quit(TResult result, const char *msg) {
             } else
                 quit(_fail, "What is the code ??? ");
     }
+    
+    /// BEGIN CHANGE FOR KATTIS
+    resultName = result == _fail ? __kattis_error_file : __kattis_message_file;
+    /// END CHANGE FOR KATTIS    
 
     if (resultName != "") {
         resultFile = std::fopen(resultName.c_str(), "w");
@@ -2718,7 +2764,10 @@ NORETURN void InStream::quit(TResult result, const char *msg) {
             xmlSafeWrite(resultFile, __testlib_toPrintableMessage(message).c_str());
             std::fprintf(resultFile, "</result>\n");
         } else
-            std::fprintf(resultFile, "%s", __testlib_toPrintableMessage(message).c_str());
+            // BEGIN CHANGE FOR KATTIS
+            std::fprintf(resultFile, "%s%s", errorName.c_str(), __testlib_toPrintableMessage(message).c_str());
+            // END CHANGE FOR KATTIS
+
         if (NULL == resultFile || fclose(resultFile) != 0) {
             resultName = "";
             quit(_fail, "Can not write to the result file");
@@ -4119,18 +4168,18 @@ void registerInteraction(int argc, char *argv[]) {
     }
 #endif
 
+    /// BEGIN CHANGE FOR KATTIS    
+
     inf.init(argv[1], _input);
-
-    tout.open(argv[2], std::ios_base::out);
-    if (tout.fail() || !tout.is_open())
-        quit(_fail, std::string("Can not write to the test-output-file '") + argv[2] + std::string("'"));
-
     ouf.init(stdin, _output);
+    ans.init(argv[2], _answer);
 
-    if (argc >= 4)
-        ans.init(argv[3], _answer);
-    else
-        ans.name = "unopened answer stream";
+    std::string dirName = argv[3] != NULL ? std::string(argv[3]) + "/" : "";
+    __kattis_message_file = dirName + FILENAME_JUDGE_MESSAGE;
+    __kattis_error_file = dirName + FILENAME_JUDGE_ERROR;
+
+    /// END CHANGE FOR KATTIS
+
 }
 
 void registerValidation() {
@@ -4219,9 +4268,17 @@ void registerTestlibCmd(int argc, char *argv[]) {
         }
     }
 
+    /// BEGIN CHANGE FOR KATTIS    
+
     inf.init(argv[1], _input);
-    ouf.init(argv[2], _output);
-    ans.init(argv[3], _answer);
+    ouf.init(stdin, _output);
+    ans.init(argv[2], _answer);
+
+    std::string dirName = argv[3] != NULL ? std::string(argv[3]) + "/" : "";
+    __kattis_message_file = dirName + FILENAME_JUDGE_MESSAGE;
+    __kattis_error_file = dirName + FILENAME_JUDGE_ERROR;
+
+    /// END CHANGE FOR KATTIS
 }
 
 void registerTestlib(int argc, ...) {
