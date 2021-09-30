@@ -4312,9 +4312,10 @@ void registerTestlibThemis(std::string inputFile, std::string outputFile) {
 #ifndef THEMIS
     __testlib_fail("THEMIS macro needs to be defined in order to use this function");
 #endif // THEMIS
-    std::string dataDir;
+    std::string dataDir, outputDir;
     std::getline(std::cin, dataDir);
-    registerTestlib(3, (dataDir + inputFile).c_str(), outputFile.c_str(), (dataDir + outputFile).c_str());
+    std::getline(std::cin, outputDir);
+    registerTestlib(3, (dataDir + inputFile).c_str(), (outputDir + outputFile).c_str(), (dataDir + outputFile).c_str());
 }
 
 void registerTestlibCMS(int argc, char* argv[]) {
