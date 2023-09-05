@@ -177,6 +177,7 @@ const char *latestFeatures[] = {
 #include <limits>
 #include <stdarg.h>
 #include <fcntl.h>
+#include <cstdint>
 
 #if (_WIN32 || __WIN32__ || _WIN64 || __WIN64__ || __CYGWIN__)
 #   if !defined(_MSC_VER) || _MSC_VER > 1400
